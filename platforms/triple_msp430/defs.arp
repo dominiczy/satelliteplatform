@@ -1,0 +1,5 @@
+IP := ac_tlm_mem i2cmsp 
+IS := router
+PROCESSOR := msp430
+SW := obdh eps ttc
+WRAPPER := 

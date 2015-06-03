@@ -1,0 +1,5 @@
+IP := ac_tlm_mem i2cmaster i2cslavereal
+IS := 
+PROCESSOR := msp430lt
+SW := i2c_master_transmit
+WRAPPER := 

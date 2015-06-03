@@ -1,0 +1,5 @@
+IP := ac_tlm_mem i2cmsp 
+IS := router
+PROCESSOR := msp430sctlm
+SW := MiBench/automotive/basicmath obdh_loop i2c_slave2_receive
+WRAPPER := 

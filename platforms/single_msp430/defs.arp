@@ -1,0 +1,5 @@
+IP := ac_tlm_mem i2cmsp 
+IS := 
+PROCESSOR := msp430
+SW := i2cmaster
+WRAPPER := 

@@ -1,0 +1,5 @@
+IP := ac_tlm_mem timer led
+IS := 
+PROCESSOR := msp430lt
+SW := freertos-mspgcc-master/Demo/launchpadled
+WRAPPER := 

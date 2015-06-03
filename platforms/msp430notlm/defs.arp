@@ -1,0 +1,5 @@
+IP := 
+IS := 
+PROCESSOR := msp430sc
+SW := 
+WRAPPER := 
