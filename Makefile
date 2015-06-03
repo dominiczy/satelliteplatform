@@ -4,7 +4,7 @@
 # ####################################################
 
 # Variable that points to ArchC installation path
-PLATFORM := msp430mem
+PLATFORM := triple_msp430os
 # Variable that points to SystemC installation path
 export SYSTEMC := /usr/local/systemc231
 

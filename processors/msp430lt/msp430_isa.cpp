@@ -67,10 +67,10 @@ extern sc_event interruptevent; //extern interruptevent
 
 //!Behavior executed before simulation begins.
 void ac_behavior( begin ){
-  printf("Please enter the start address of the instruction memory\n");
-  uint16_t address;
-  cin >> hex >> address;
-  RB.write(PC, address); //0x1100
+  //printf("Please enter the start address of the instruction memory\n");
+  //uint16_t address;
+  //cin >> hex >> address;
+  RB.write(PC, 0x1100); //0x1100
   RB.write(SR, 0);
 };
 

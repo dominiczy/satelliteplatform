@@ -24,7 +24,7 @@ SC_MODULE(Led) {
 	ac_tlm_req* req; //memory request
 	ac_tlm_rsp* rsp; //memory response 
 
-	sc_out<sc_bit> redled; //output port sda
+	//sc_out<sc_bit> redled; //output port sda
 
 	uint32_t value;
 

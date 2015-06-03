@@ -153,7 +153,7 @@ int sc_main(int ac, char *av[])
 int batch=1;
   msp430_proc1.init(ac1, av1);
   msp430_proc1.set_instr_batch_size(batch); //one instruction before switching to other modules
- msp430_proc1.enable_gdb(5000); //gdb
+// msp430_proc1.enable_gdb(5000); //gdb
 
   msp430_proc2.init(ac2, av2);
   msp430_proc2.set_instr_batch_size(batch); //one instruction before switching to other modules
