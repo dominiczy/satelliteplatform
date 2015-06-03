@@ -1,0 +1,27 @@
+/**
+ * @file msp430.ac
+ * @author Rogerio Paludo <rogerio.pld@gmail.com>
+ * @date Janeiro 28, 2015 (documented date)
+ * 
+ * @brief MSP430 High level architecture description
+ * 
+ * @todo Fix data memory/address out of bounds problem
+ * modified by Dominic Zijsltra
+ */
+
+/// MSP430 description 
+AC_ARCH(msp430) {
+	
+	/// Architecture Elements description
+	ac_wordsize 16;								/**< Word size for MSP430 */	
+	ac_tlm_port DM:128K;							/**< TLM port, represented as a continuos array */
+	ac_regbank RB:16;							/**< Register bank */
+	ac_tlm_intr_port inta;							/**< Interrupt port */
+	ac_tlm_intr_port intb;							/**< Interrupt port */
+
+	/// ArchC constructor 
+	ARCH_CTOR(msp430) {
+		ac_isa("msp430_isa.ac");		/**< Instruction descriptions file */
+		set_endian("little");				/**< Endianess */
+  };
+};

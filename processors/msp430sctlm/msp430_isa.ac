@@ -1,0 +1,358 @@
+/**
+* @file msp430_isa.ac
+* @author Rogerio Paludo <rogerio.pld@gmail.com>
+* @date Janeiro 28, 2015 (documented date)
+* 
+* @brief MSP430 High level instructions declaration
+* 
+* @todo Verify all the possible cases through testing 
+*
+* @b Nomenclature used
+*
+* @b 16 bits instructions (_16)
+*   - ad = 0 as = 00 _16rm   @e "register mode"
+*   - ad = 0 as = 10 _16irm  @e "indexed register mode"
+*   - ad = 0 as = 11 _16iaim @e "indirect autoincrement mode"
+*
+* @b 32 bits instructions (_32)
+*   - ad = 1 && as = 00 (_32idst) @e "indexed destination"
+*   - ad = 0 && as = 01 (_32isrc) @e "indexed source"
+*   - sreg = 0 && ad = 0 && as = 3 (_32imm) @e "immediate mode"
+*   - ad = 1 && as = 3 (_32iaim) @e "indirect autoincrement mode"
+*   - as = 2 (_32irm) @e "indexed register mode"
+*
+* @b 48 bits instructions (_48)
+*   - ad = 1 && ad = 1 (_48idm) @e "indexed mode"
+*   - ad = 1 && as = 3 (_48imm) @e "immediate mode"
+*/
+
+/// MSP430 Instruction set Declaration
+AC_ISA(msp430) {
+	
+	/// Double operand Instructions field declaration
+	ac_format Double_48 = "%odst:16 %osrc:16 %op:4 %sreg:4 %ad:1 %bw:1 %as:2 %dreg:4";  /**< Double instruction 48bits size */
+	ac_format Double_32 = "%oset:16 %op:4 %sreg:4 %ad:1 %bw:1 %as:2 %dreg:4";	          /**< Double instruction 32bits size */
+	ac_format Double = "%op:4 %sreg:4 %ad:1 %bw:1 %as:2 %dreg:4";	                      /**< Double Instruction 16bits size */
+	/// Single operand instruction field declaration 
+	ac_format Single_32 = "oset:16 %cnt:6 %op:3 %bw:1 %as:2 %sreg:4";                   /**< Single Instruction 32bits size */
+	ac_format Single = "%cnt:6 op:3 %bw:1 %as:2 %sreg:4";	                              /**< Single Instruction 16bits size */
+	/// Jump instructions 
+	ac_format Jump   = "%opc:3 %c:3 %offset:10:s"; /**< unique format  */
+
+	/**************************************************************//**
+	* @b Double Operand Instructions declaration
+	******************************************************************/
+	/** Instruction are separated in multiple cases to cover all 
+	*   possible addressing modes.
+  * 
+	*  @note Nomeclature used is detailed in the beginning of this file.  
+	*/
+	/// 48 bits mov instruction declaration
+	ac_instr<Double_48> mov_48imm, mov_48idm,  
+  add_48idm, add_48imm,
+	addc_48idm, addc_48imm,
+	and_48idm, and_48imm,
+	bic_48idm, bic_48imm,
+	bis_48idm, bis_48imm,
+	bit_48idm, bit_48imm,
+	cmp_48idm, cmp_48imm,
+	dadd_48idm, dadd_48imm,
+	sub_48idm, sub_48imm,
+	subc_48idm, subc_48imm,
+	xor_48idm, xor_48imm;
+
+	/// 32 bits instructions declaration
+	ac_instr<Double_32> mov_32idst, mov_32isrc, mov_32imm, mov_32iaim, mov_32irm, 
+	add_32idst, add_32isrc, add_32imm, add_32iaim, add_32irm,
+	addc_32idst, addc_32isrc, addc_32imm, addc_32iaim, addc_32irm,
+	and_32idst, and_32isrc, and_32imm, and_32iaim, and_32irm,
+	bic_32idst, bic_32isrc, bic_32imm, bic_32iaim, bic_32irm,
+	bis_32idst, bis_32isrc, bis_32imm, bis_32iaim, bis_32irm,
+	bit_32idst, bit_32isrc, bit_32imm, bit_32iaim, bit_32irm,
+	cmp_32idst, cmp_32isrc, cmp_32imm, cmp_32iaim, cmp_32irm,
+	dadd_32idst, dadd_32isrc, dadd_32imm, dadd_32iaim, dadd_32irm,
+	sub_32idst, sub_32isrc, sub_32imm, sub_32iaim, sub_32irm,
+	subc_32idst, subc_32isrc, subc_32imm, subc_32iaim, subc_32irm,
+	xor_32idst, xor_32isrc, xor_32imm, xor_32iaim, xor_32irm;	
+
+	/// 16 bits instructions declaration
+	ac_instr<Double>    mov_16rm, mov_16irm, mov_16iaim, 
+  add_16rm, add_16irm, add_16iaim,
+  addc_16rm, addc_16irm, addc_16iaim,
+	and_16rm, and_16irm, and_16iaim,
+	bic_16rm, bic_16irm, bic_16iaim,
+	bis_16rm, bis_16irm, bis_16iaim,
+	bit_16rm, bit_16irm, bit_16iaim,
+	cmp_16rm, cmp_16irm, cmp_16iaim,
+	dadd_16rm, dadd_16irm, dadd_16iaim,
+	sub_16rm, sub_16irm, sub_16iaim,
+	subc_16rm, subc_16irm, subc_16iaim,
+	xor_16rm, xor_16irm, xor_16iaim;
+
+	/**************************************************************//**
+	* @b Single Operand Instructions declaration
+	******************************************************************/	
+	/// 32 bits instructions declaration
+	ac_instr<Single_32>  rrc_32sm, rrc_32am, rrc_32imm, rrc_32im,
+	rra_32sm, rra_32am, rra_32imm,	rra_32im,
+	swpb_32sm, swpb_32am, swpb_32imm, swpb_32im,
+  sxt_32sm, sxt_32am, sxt_32imm, sxt_32im,
+	push_32sm, push_32am, push_32imm, push_32im,
+	call_32sm, call_32am, call_32imm, call_32im;
+
+	/// 16 bits instructions declaration
+	ac_instr<Single> rrc_16rm, rrc_16irm, rrc_16iaim,
+	rra_16rm, rra_16irm, rra_16iaim,
+	swpb_16rm, swpb_16irm, swpb_16iaim,
+  sxt_16rm, sxt_16irm, sxt_16iaim,
+	push_16rm, push_16irm, push_16iaim,
+	call_16rm, call_16irm, call_16iaim,
+	reti;
+
+	/**************************************************************//**
+	* @b Jump Instructions declaration
+	******************************************************************/	
+	ac_instr<Jump>  jne, jeq, jnc, jc, jn, jge, jl, jmp;
+	
+	/// Instruction decoding
+	ISA_CTOR(msp430) {
+		
+		/**************************************************************//**
+		* @b Double Operand Instructions 
+		******************************************************************/
+		/// - mov instruction
+		mov_48idm.set_decoder(op=4, ad=1, as=1);				
+		mov_48imm.set_decoder(op=4, sreg=0, ad=1, as=3);
+		mov_32imm.set_decoder(op=4, sreg=0, ad=0, as=3);
+		mov_32iaim.set_decoder(op=4, as=3, ad=1);
+		mov_16iaim.set_decoder(op=4, as=3, ad=0);		
+		mov_16rm.set_decoder(op=4, ad=0, as=0);	
+		mov_32idst.set_decoder(op=4, ad=1, as=0);
+		mov_32isrc.set_decoder(op=4, ad=0, as=1);		
+		mov_32irm.set_decoder(op=4, as=2);	
+		mov_16irm.set_decoder(op=4, ad=0, as=2);		
+
+		/// - add instruction
+	 	add_48idm.set_decoder(op=5, ad=1, as=1);				
+		add_48imm.set_decoder(op=5, sreg=0, ad=1, as=3);
+		add_32imm.set_decoder(op=5, sreg=0, ad=0, as=3);
+		add_32iaim.set_decoder(op=5, as=3, ad=1);
+		add_16iaim.set_decoder(op=5, as=3, ad=0);		
+		add_16rm.set_decoder(op=5, ad=0, as=0);	
+		add_32idst.set_decoder(op=5, ad=1, as=0);
+		add_32isrc.set_decoder(op=5, ad=0, as=1);		
+		add_32irm.set_decoder(op=5, as=2);	
+		add_16irm.set_decoder(op=5, ad=0, as=2);
+
+		/// - addc instruction
+	 	addc_48idm.set_decoder(op=6, ad=1, as=1);				
+		addc_48imm.set_decoder(op=6, sreg=0, ad=1, as=3);
+		addc_32imm.set_decoder(op=6, sreg=0, ad=0, as=3);
+		addc_32iaim.set_decoder(op=6, as=3, ad=1);
+		addc_16iaim.set_decoder(op=6, as=3, ad=0);			
+		addc_16rm.set_decoder(op=6, ad=0, as=0);	
+		addc_32idst.set_decoder(op=6, ad=1, as=0);
+		addc_32isrc.set_decoder(op=6, ad=0, as=1);		
+		addc_32irm.set_decoder(op=6, as=2);	
+		addc_16irm.set_decoder(op=6, ad=0, as=2);
+
+		/// - and instruction
+	 	and_48idm.set_decoder(op=15, ad=1, as=1);				
+		and_48imm.set_decoder(op=15, sreg=0, ad=1, as=3);
+		and_32imm.set_decoder(op=15, sreg=0, ad=0, as=3);
+		and_32iaim.set_decoder(op=15, as=3, ad=1);
+		and_16iaim.set_decoder(op=15, as=3, ad=0);			
+		and_16rm.set_decoder(op=15, ad=0, as=0);	
+		and_32idst.set_decoder(op=15, ad=1, as=0);
+		and_32isrc.set_decoder(op=15, ad=0, as=1);		
+		and_32irm.set_decoder(op=15, as=2);	
+		and_16irm.set_decoder(op=15, ad=0, as=2);
+
+		/// - bic instruction
+	 	bic_48idm.set_decoder(op=12, ad=1, as=1);				
+		bic_48imm.set_decoder(op=12, sreg=0, ad=1, as=3);
+		bic_32imm.set_decoder(op=12, sreg=0, ad=0, as=3);
+		bic_32iaim.set_decoder(op=12, as=3, ad=1);
+		bic_16iaim.set_decoder(op=12, as=3, ad=0);		
+		bic_16rm.set_decoder(op=12, ad=0, as=0);	
+		bic_32idst.set_decoder(op=12, ad=1, as=0);
+		bic_32isrc.set_decoder(op=12, ad=0, as=1);		
+		bic_32irm.set_decoder(op=12, as=2);	
+		bic_16irm.set_decoder(op=12, ad=0, as=2);
+
+		/// - bis instruction
+	 	bis_48idm.set_decoder(op=13, ad=1, as=1);				
+		bis_48imm.set_decoder(op=13, sreg=0, ad=1, as=3);
+		bis_32imm.set_decoder(op=13, sreg=0, ad=0, as=3);
+		bis_32iaim.set_decoder(op=13, as=3, ad=1);
+		bis_16iaim.set_decoder(op=13, as=3, ad=0);	
+		bis_16rm.set_decoder(op=13, ad=0, as=0);	
+		bis_32idst.set_decoder(op=13, ad=1, as=0);
+		bis_32isrc.set_decoder(op=13, ad=0, as=1);		
+		bis_32irm.set_decoder(op=13, as=2);	
+		bis_16irm.set_decoder(op=13, ad=0, as=2);
+
+		/// - bit instruction
+	 	bit_48idm.set_decoder(op=11, ad=1, as=1);				
+		bit_48imm.set_decoder(op=11, sreg=0, ad=1, as=3);
+		bit_32imm.set_decoder(op=11, sreg=0, ad=0, as=3);
+		bit_32iaim.set_decoder(op=11, as=3, ad=1);
+		bit_16iaim.set_decoder(op=11, as=3, ad=0);		
+		bit_16rm.set_decoder(op=11, ad=0, as=0);	
+		bit_32idst.set_decoder(op=11, ad=1, as=0);
+		bit_32isrc.set_decoder(op=11, ad=0, as=1);		
+		bit_32irm.set_decoder(op=11, as=2);	
+		bit_16irm.set_decoder(op=11, ad=0, as=2);
+
+		/// - cmp instruction
+	 	cmp_48idm.set_decoder(op=9, ad=1, as=1);				
+		cmp_48imm.set_decoder(op=9, sreg=0, ad=1, as=3);
+		cmp_32imm.set_decoder(op=9, sreg=0, ad=0, as=3);
+		cmp_32iaim.set_decoder(op=9, as=3, ad=1);
+		cmp_16iaim.set_decoder(op=9, as=3, ad=0);		
+		cmp_16rm.set_decoder(op=9, ad=0, as=0);	
+		cmp_32idst.set_decoder(op=9, ad=1, as=0);
+		cmp_32isrc.set_decoder(op=9, ad=0, as=1);		
+		cmp_32irm.set_decoder(op=9, as=2);	
+		cmp_16irm.set_decoder(op=9, ad=0, as=2);
+		
+		/// - dadd instruction
+	 	dadd_48idm.set_decoder(op=10, ad=1, as=1);				
+		dadd_48imm.set_decoder(op=10, sreg=0, ad=1, as=3);
+		dadd_32imm.set_decoder(op=10, sreg=0, ad=0, as=3);
+		dadd_32iaim.set_decoder(op=10, as=3, ad=1);
+		dadd_16iaim.set_decoder(op=10, as=3, ad=0);		
+		dadd_16rm.set_decoder(op=10, ad=0, as=0);	
+		dadd_32idst.set_decoder(op=10, ad=1, as=0);
+		dadd_32isrc.set_decoder(op=10, ad=0, as=1);		
+		dadd_32irm.set_decoder(op=10, as=2);	
+		dadd_16irm.set_decoder(op=10, ad=0, as=2);
+
+		/// - sub instruction
+	 	sub_48idm.set_decoder(op=8, ad=1, as=1);				
+		sub_48imm.set_decoder(op=8, sreg=0, ad=1, as=3);
+		sub_32imm.set_decoder(op=8, sreg=0, ad=0, as=3);
+		sub_32iaim.set_decoder(op=8, as=3, ad=1);
+		sub_16iaim.set_decoder(op=8, as=3, ad=0);		
+		sub_16rm.set_decoder(op=8, ad=0, as=0);	
+		sub_32idst.set_decoder(op=8, ad=1, as=0);
+		sub_32isrc.set_decoder(op=8, ad=0, as=1);		
+		sub_32irm.set_decoder(op=8, as=2);	
+		sub_16irm.set_decoder(op=8, ad=0, as=2);
+
+		/// - subc instruction
+	 	subc_48idm.set_decoder(op=7, ad=1, as=1);				
+		subc_48imm.set_decoder(op=7, sreg=0, ad=1, as=3);
+		subc_32imm.set_decoder(op=7, sreg=0, ad=0, as=3);
+		subc_32iaim.set_decoder(op=7, as=3, ad=1);
+		subc_16iaim.set_decoder(op=7, as=3, ad=0);		
+		subc_16rm.set_decoder(op=7, ad=0, as=0);	
+		subc_32idst.set_decoder(op=7, ad=1, as=0);
+		subc_32isrc.set_decoder(op=7, ad=0, as=1);		
+		subc_32irm.set_decoder(op=7, as=2);	
+		subc_16irm.set_decoder(op=7, ad=0, as=2);
+
+		/// - xor instruction
+	 	xor_48idm.set_decoder(op=14, ad=1, as=1);				
+		xor_48imm.set_decoder(op=14, sreg=0, ad=1, as=3);
+		xor_32imm.set_decoder(op=14, sreg=0, ad=0, as=3);
+		xor_32iaim.set_decoder(op=14, as=3, ad=1);
+		xor_16iaim.set_decoder(op=14, as=3, ad=0);		
+		xor_16rm.set_decoder(op=14, ad=0, as=0);	
+		xor_32idst.set_decoder(op=14, ad=1, as=0);
+    xor_32isrc.set_decoder(op=14, ad=0, as=1);		
+		xor_32irm.set_decoder(op=14, as=2);	
+		xor_16irm.set_decoder(op=14, ad=0, as=2);
+
+		
+		/**************************************************************//**
+		* @b Single Operand Instructions 
+		******************************************************************/		
+
+		/// - rrc instruction
+		rrc_32im.set_decoder(cnt=4, op=0, as=1);
+		rrc_32sm.set_decoder(cnt=4, op=0, as=1, sreg=0);
+		rrc_32am.set_decoder(cnt=4, op=0, as=1, sreg=2);
+		rrc_32imm.set_decoder(cnt=4, op=0, as=3, sreg=0);
+		rrc_16rm.set_decoder(cnt=4, op=0, as=0);
+		rrc_16irm.set_decoder(cnt=4, op=0, as=2);
+		rrc_16iaim.set_decoder(cnt=4, op=0, as=3);
+		
+		/// - rr instruction
+		rra_32im.set_decoder(cnt=4, op=2, as=1);
+		rra_32sm.set_decoder(cnt=4, op=2, as=1, sreg=0);
+		rra_32am.set_decoder(cnt=4, op=2, as=1, sreg=2);
+		rra_32imm.set_decoder(cnt=4, op=2, as=3, sreg=0);
+		rra_16rm.set_decoder(cnt=4, op=2, as=0);
+		rra_16irm.set_decoder(cnt=4, op=2, as=2);
+		rra_16iaim.set_decoder(cnt=4, op=2, as=3);
+
+		/// - swpb instruction
+		swpb_32im.set_decoder(cnt=4, op=1, as=1);
+		swpb_32sm.set_decoder(cnt=4, op=1, as=1, sreg=0);
+		swpb_32am.set_decoder(cnt=4, op=1, as=1, sreg=2);
+		swpb_32imm.set_decoder(cnt=4, op=1, as=3, sreg=0);
+		swpb_16rm.set_decoder(cnt=4, op=1, as=0);
+		swpb_16irm.set_decoder(cnt=4, op=1, as=2);
+		swpb_16iaim.set_decoder(cnt=4, op=1, as=3);
+		
+		/// - sxt instruction
+		sxt_32im.set_decoder(cnt=4, op=3, as=1);
+		sxt_32sm.set_decoder(cnt=4, op=3, as=1, sreg=0);
+		sxt_32am.set_decoder(cnt=4, op=3, as=1, sreg=2);
+		sxt_32imm.set_decoder(cnt=4, op=3, as=3, sreg=0);
+		sxt_16rm.set_decoder(cnt=4, op=3, as=0);
+		sxt_16irm.set_decoder(cnt=4, op=3, as=2);
+		sxt_16iaim.set_decoder(cnt=4, op=3, as=3);
+
+		/// - push instruction
+		push_32im.set_decoder(cnt=4, op=4, as=1);
+		push_32sm.set_decoder(cnt=4, op=4, sreg=0, as=1);
+		push_32am.set_decoder(cnt=4, op=4, sreg=2, as=1 );
+		push_32imm.set_decoder(cnt=4, op=4, sreg=0, as=3);
+		push_16rm.set_decoder(cnt=4, op=4, as=0);
+		push_16irm.set_decoder(cnt=4, op=4, as=2);
+		push_16iaim.set_decoder(cnt=4, op=4, as=3);
+		
+		/// - call instruction
+		call_32sm.set_decoder(cnt=4, op=5, sreg=0, as=1);
+		call_32am.set_decoder(cnt=4, op=5, sreg=2, as=1);
+		call_32imm.set_decoder(cnt=4, op=5, sreg=0, as=3);
+		call_32im.set_decoder(cnt=4, op=5, as=1);
+		call_16rm.set_decoder(cnt=4, op=5, as=0);
+		call_16irm.set_decoder(cnt=4, op=5, as=2);
+		call_16iaim.set_decoder(cnt=4, op=5, as=3);
+
+		/// - reti instruction
+		reti.set_decoder(cnt=4, op=6);
+
+		/**************************************************************//**
+		* @b Jump Operand Instructions 
+		******************************************************************/
+		
+		/// - JNE/JNZ instruction
+		jne.set_decoder(opc=1, c=0);
+		
+		/// - JEQ/JZ instruction
+		jeq.set_decoder(opc=1, c=1);		
+
+		/// - JNC instruction
+		jnc.set_decoder(opc=1, c=2);
+
+		/// - JC instruction
+		jc.set_decoder(opc=1, c=3);
+
+		/// - JN instruction
+		jn.set_decoder(opc=1, c=4);
+
+		/// - JGE instruction
+		jge.set_decoder(opc=1, c=5);
+
+		/// - JL instruction
+		jl.set_decoder(opc=1, c=6);
+		
+		/// - JMP instruction
+		jmp.set_decoder(opc=1, c=7);
+
+};
+};
