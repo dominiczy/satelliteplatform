@@ -251,7 +251,7 @@ class initiator :
 				shift_reg=UCB0TXBUF;
 
 				/** transmit interrupt **/
-				//transmit_interrupt(); 
+				transmit_interrupt(); 
 	
 				/** data transfer **/
 				cout << sc_time_stamp()<< ": I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Transmitting data : " << UCB0TXBUF << endl;
