@@ -18,25 +18,19 @@ Led::Led(sc_module_name name)
 	req= new ac_tlm_req; 
 	rsp= new ac_tlm_rsp; 
 	SC_METHOD(blink_method);
-	//dont_initialize();
 	sensitive << eventmem_write_p1out;
 }
 
 void Led::blink_method() {
-	value = read_register(P1OUT_);
-	//cout << sc_time_stamp() << ": P1out written "<< value << endl;
+	value = read_register(P1OUT_); // read p1 register
 	if ((value & BIT0) & (value & BIT6)){
 		cout << sc_time_stamp() << ": LED: ** Red 1 Green 1" << endl;
-	//	redled.write((sc_bit) 1); 
 	} else if ((value & BIT0) & !(value & BIT6)) {
-		cout << sc_time_stamp() << ": LED: *- Red 1 Green 0" << endl;
-	//	redled.write((sc_bit) 1); 
+		cout << sc_time_stamp() << ": LED: *- Red 1 Green 0" << endl; 
 	} else if (!(value & BIT0) & (value & BIT6)) {
 		cout << sc_time_stamp() << ": LED: -* Red 0 Green 1" << endl;
-	//	redled.write((sc_bit) 0); 
 	}else {
 		cout << sc_time_stamp() << ": LED: -- Red 0 Green 0" << endl;
-	//	redled.write((sc_bit) 0); 
 	}
 }
 

@@ -68,7 +68,7 @@ void ac_behavior( begin ){
  // printf("Please enter the start address of the instruction memory\n");
   //uint16_t address;
   //cin >> hex >> address;
-  RB.write(PC, 0xc000); //0x1100
+  RB.write(PC, 0x1100); //0x1100
   RB.write(SR, 0);
 };
 

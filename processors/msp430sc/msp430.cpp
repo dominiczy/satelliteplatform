@@ -78,8 +78,6 @@ void msp430::behavior() {
         return;
       }
 
-      if (gdbstub && gdbstub->stop(decode_pc)) gdbstub->process_bp();
-
       ac_pc = decode_pc;
 
       ISA.cur_instr_id = ins_id;
@@ -875,21 +873,6 @@ void msp430::delayed_load(char* program) {
   strcpy(delayed_load_program, program);
 }
 
-// Returns pointer to gdbstub
-AC_GDB<msp430_parms::ac_word>* msp430::get_gdbstub() {
-  return gdbstub;
-}
-
-// Returns true if model endianness doesn't match with host's, false otherwise
-bool msp430::get_ac_tgt_endian() {
-  return ac_tgt_endian;
-}
-
-// Stops the processor
-void msp430::ac_stop() {
-  stop();
-}
-
 // Returns ac_pc value
 unsigned msp430::get_ac_pc() {
   return ac_pc;
@@ -903,12 +886,5 @@ void msp430::set_ac_pc(unsigned int value) {
 // Wrapper function to PrintStat().
 void msp430::PrintStat() {
   ac_arch<msp430_parms::ac_word, msp430_parms::ac_Hword>::PrintStat();
-}
-
-// Enables GDB
-void msp430::enable_gdb(int port) {
-  gdbstub->set_port(port);
-  gdbstub->enable();
-  gdbstub->connect();
 }
 

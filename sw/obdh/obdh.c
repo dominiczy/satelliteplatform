@@ -19,46 +19,15 @@ bool transmit;
 unsigned char RXData;
 unsigned char TXData;
 
-/**void mastertransmit(int slaveaddress)
-{
-	 transmit=1;
-	  UCB0I2CSA = slaveaddress;                         // Slave Address is 048h
-
-	 // while (1)  {
-    		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
-    		UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
-		while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
-		UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
-		__bis_SR_register(CPUOFF + GIE);        // Enter LPM0 w/ interrupts
-	//}
-}
-
-void masterreceive(int slaveaddress)
-{
-	  transmit=0;
-	  UCB0I2CSA = slaveaddress;                         // Slave Address is 048h
-
-	  //while (1)
-	 // {
-		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
-		//UCB0CTL1 &= !(UCTR);
-	    	UCB0CTL1 |= UCTXSTT;                    // I2C start condition
-	    	while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
-	    	UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
-	    	__bis_SR_register(CPUOFF + GIE);        // Enter LPM0 w/ interrupts     
-	 // }          
-}**/
-
-
 int main(void)
 {	
-	 WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
-	  P3SEL |= 0x06;                            // Assign I2C pins to USCI_B0
-	  UCB0CTL1 |= UCSWRST;                      // Enable SW reset
-	  UCB0CTL0 = UCMST + UCMODE_3 + UCSYNC;     // I2C Master, synchronous mode
-	  UCB0CTL1 = UCSSEL_2 + UCSWRST;            // Use SMCLK, keep SW reset
-	  UCB0BR0 = 12;                             // fSCL = SMCLK/12 = ~100kHz
-	  UCB0BR1 = 0;
+	WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
+	P3SEL |= 0x06;                            // Assign I2C pins to USCI_B0
+	UCB0CTL1 |= UCSWRST;                      // Enable SW reset
+	UCB0CTL0 = UCMST + UCMODE_3 + UCSYNC;     // I2C Master, synchronous mode
+	UCB0CTL1 = UCSSEL_2 + UCSWRST;            // Use SMCLK, keep SW reset
+	UCB0BR0 = 12;                             // fSCL = SMCLK/12 = ~100kHz
+	UCB0BR1 = 0;
 	UCB0I2CSA=2;
 	UCB0I2COA = 4;                         // Own Address is 048h
 	UCB0CTL1 &= ~UCSWRST;                     // Clear SW reset, resume operation
@@ -76,8 +45,8 @@ int main(void)
 		TXData=wakeup;
 		transmit=1;
 	  	UCB0I2CSA = slaveaddress;                         // Slave Address is 048h
-    		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
-    		UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
+    	while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
+    	UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
 		while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
 		UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
 	
@@ -85,15 +54,15 @@ int main(void)
 		transmit=0;
 		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
 		UCB0CTL1 &= !(UCTR);
-	    	UCB0CTL1 |= UCTXSTT;                    // I2C start condition
-	    	while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
-	    	UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
+	    UCB0CTL1 |= UCTXSTT;                    // I2C start condition
+	    while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
+	    UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
 	    	
 		// Put EPS to sleep
 		TXData=sleep;
 		transmit=1;
-    		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
-    		UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
+    	while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
+    	UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
 		while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
 		UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
    		
@@ -102,8 +71,8 @@ int main(void)
 		TXData=wakeup;
 		transmit=1;
 	  	UCB0I2CSA = slaveaddress;                         // Slave Address is 048h
-    		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
-    		UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
+    	while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
+    	UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
 		while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
 		UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
 	
@@ -111,15 +80,15 @@ int main(void)
 		transmit=0;
 		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
 		UCB0CTL1 &= !(UCTR);
-	    	UCB0CTL1 |= UCTXSTT;                    // I2C start condition
-	    	while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
-	    	UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
+	    UCB0CTL1 |= UCTXSTT;                    // I2C start condition
+	    while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
+	    UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
 	    	
 		// Put TTC to sleep
 		TXData=sleep;
 		transmit=1;
-    		while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
-    		UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
+    	while (UCB0CTL1 & UCTXSTP);             // Ensure stop condition got sent
+    	UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
 		while (UCB0CTL1 & UCTXSTT);             // Start condition sent?
 		UCB0CTL1 |= UCTXSTP;                    // I2C stop condition
    		

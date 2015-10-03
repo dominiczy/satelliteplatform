@@ -16,7 +16,7 @@
 const char *project_name="msp430";
 const char *project_file="msp430.ac";
 const char *archc_version="2.2";
-const char *archc_options="-gdb -abi ";
+const char *archc_options="-abi ";
 
 #include  <iostream>
 #include  <systemc.h>
@@ -31,6 +31,10 @@ int sc_main(int ac, char *av[])
   //!  ISA simulator
   msp430 msp430_proc1("msp430");
 
+
+ // char *av1[] = {"msp430.x", "--load=a.out", ""}; //load master program here
+  //int ac1 = 3;
+
 #ifdef AC_DEBUG
   ac_trace("msp430_proc1.trace");
 #endif 
@@ -39,7 +43,7 @@ int sc_main(int ac, char *av[])
  //msp430_proc1.enable_gdb();
   cerr << endl;
 
-  sc_start();
+  sc_start(-1);
 
   msp430_proc1.PrintStat();
   cerr << endl;

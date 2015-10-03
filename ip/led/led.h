@@ -12,7 +12,7 @@
 #define LED_H
 
 #include <systemc.h>
-#include "ac_tlm_protocol.H" //archc for port to cpu
+#include "ac_tlm_protocol.H" // port to mem
 
 #define P1OUT_                0x0021    /* Port 1 Output */
 #define BIT0                (0x0001)
@@ -24,15 +24,11 @@ SC_MODULE(Led) {
 	ac_tlm_req* req; //memory request
 	ac_tlm_rsp* rsp; //memory response 
 
-	//sc_out<sc_bit> redled; //output port sda
-
 	uint32_t value;
 
 	SC_HAS_PROCESS(Led);
 	Led(sc_module_name name);
 	void blink_method();
-
-
 
 	/** read register **/
 	uint32_t read_register(uint32_t address)

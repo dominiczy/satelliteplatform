@@ -10,14 +10,14 @@
 
 /** Includes **/ 
 #include	<systemc.h> 
-//#include         <time.h>
 #include	<tlm_utils/simple_initiator_socket.h> 
 #include	<string.h>
-#include "ac_tlm_protocol.H" //archc for port to cpu
+#include "ac_tlm_protocol.H" // for port to cpu
 
 /** Macro **/ 
 #define SC_INCLUDE_DYNAMIC_PROCESSES 
 
+/** MSP430 defines **/
 #define UCB0CTL1_             0x0069    /* USCI B0 Control Register 1 */
 #define UCTXSTP             (0x04)    /* Transmit STOP */
 #define UCTXSTT             (0x02)    /* Transmit START */
@@ -53,7 +53,6 @@ using namespace tlm_utils;
 /** class for initiator **/ 
 class initiator : 
 		public sc_module
-		//, public ac_tlm_transport_if  //ArchC TLM
 	{ 
 	public: 
 	/** Instaniation of predefined class **/ 
@@ -77,8 +76,7 @@ class initiator :
 	ac_tlm_rsp* rsp; //memory response
 
 	/** transmit interrupt **/
-	void transmit_interrupt()
-	{
+	void transmit_interrupt() {
 		IFG2=read_register(IFG2_); 
 		write_register(IFG2_ , ((IFG2 | UCB0TXIFG)& !UCB0RXIFG));
 
@@ -88,8 +86,7 @@ class initiator :
 	}
 
 	/** receive interrupt **/
-	void receive_interrupt()
-	{
+	void receive_interrupt() 	{
 		IFG2=read_register(IFG2_); 
 		write_register(IFG2_ , ((IFG2 | UCB0RXIFG)& !UCB0TXIFG));
 		
@@ -98,10 +95,8 @@ class initiator :
 		portcpu->transport(*req); 
 	}
 
-
 	/** read register **/
-	uint32_t read_register(uint32_t address)
-	{
+	uint32_t read_register(uint32_t address) {
 		req->type=READ;
 		req->addr=address;
 		*rsp=portDM ->transport(*req); 
@@ -109,8 +104,7 @@ class initiator :
 	}
 
 	/** write register **/
-	void write_register(uint32_t address, uint32_t data)
-	{
+	void write_register(uint32_t address, uint32_t data) {
 		req->type=WRITE;
 		req->addr=address;
 		req->data=data;
@@ -118,45 +112,34 @@ class initiator :
 	}
 
 	/** wait for other master **/
-	void wait_other_master()
-	{
-		write_register(UCB0STAT_,((read_register(UCB0STAT_))&UCALIFG));// set arbitration lost flag
-		while (STP_flag==0) {
-			//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Other master transmitting, waiting for stop flag " << endl;
-			wait();		
+	void wait_other_master() {
+		write_register(UCB0STAT_,((read_register(UCB0STAT_))|UCALIFG));// set arbitration lost flag
+		while (STP_flag==0) { // Other master transmitting
+			wait();		// Wait for stop flag
 		}
-		//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- stop flag set, wait until cleared " << endl;
-		while (STP_flag==1) {
-			//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Other master transmitting, wait until stop flag cleared" << endl;
-			wait();				
+		while (STP_flag==1) { // Stop flag set
+			wait();		// Wait until stop flag cleared
 		}
-		//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- other master finished, ready to start" << endl;
 	}
 
 	/** function declaration **/ 
 	void process()
 	{	
-		wait(2500, SC_NS); //100? wait to prevent use of garbage reg values
+		wait(2500, SC_NS); // Wait to prevent use of garbage reg values
 		sc_time delay = sc_time(2500, SC_NS); 
 		sc_bit b;
 
 		/** wait for start flag **/	
-		transmissionstart: //goto label in case of arbitration loss
-		//clock_t start = clock(); // clock start
+		
+		transmissionstart: // Goto label in case of arbitration loss
 		do {	
-			//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- waiting for stt flag write " << UCTXSTT << endl;
-			if (!(boolmem_write_ctl1)) wait(eventmem_write_ctl1);
-			boolmem_write_ctl1=0; // this is a global variable, can be reset by other master!!!
-			UCB0CTL1=read_register(UCB0CTL1_);
-			//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- stt flag write happened " << UCTXSTT << endl;
-			/** HERE: check for start condition of other master on bus, if yes wait (slave remains) **/
-			if (STT_flag==1 ) {
-				//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Other master transmitting " << endl;
+			if (!(boolmem_write_ctl1)) wait(eventmem_write_ctl1); // Wait for start flag write to register
+			boolmem_write_ctl1=0; // Reset write flag
+			UCB0CTL1=read_register(UCB0CTL1_); // Start flag written, read register
+			if (STT_flag==1 ) { // Other master transmitting
 				wait_other_master();
 			}
-		} while ((!(UCB0CTL1 & UCTXSTT))| ( !((read_register(UCB0CTL0_)) & UCMST) )); // no start flag or no master
-		
-		//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- start flag set, start transmission " << UCTXSTT << endl;
+		} while ((!(UCB0CTL1 & UCTXSTT))| ( !((read_register(UCB0CTL0_)) & UCMST) )); // No start flag or not in master mode
 		STT_flag=1; 
 
 		/** see if transmitting or receiving **/
@@ -169,40 +152,36 @@ class initiator :
 		if(UCTR_flag) transmit_interrupt(); 
 	
 		/** TLM-2 generic payload transaction **/
-    		tlm::tlm_generic_payload* trans = new tlm::tlm_generic_payload;
-      		trans->set_address( 0);
+		tlm::tlm_generic_payload* trans = new tlm::tlm_generic_payload;
+		trans->set_address( 0);
    		trans->set_data_ptr(reinterpret_cast<unsigned char *>(&sda)); 
-      		trans->set_data_length( 4 );
-      		trans->set_streaming_width( 4 ); // = data_length to indicate no streaming
-      		trans->set_byte_enable_ptr( 0 ); // 0 indicates unused
-      		trans->set_dmi_allowed( false ); // Mandatory initial value
-      		trans->set_response_status( tlm::TLM_INCOMPLETE_RESPONSE ); // Mandatory initial value
+		trans->set_data_length( 4 );
+		trans->set_streaming_width( 4 ); // data_length, no streaming
+		trans->set_byte_enable_ptr( 0 ); // not used
+		trans->set_dmi_allowed( false ); // no dmi
+		trans->set_response_status( tlm::TLM_INCOMPLETE_RESPONSE ); // initial value
 		trans->set_command(TLM_IGNORE_COMMAND); 
 
 		/** write start condition to bus **/
 		b = 0; 
 		sda.write(b); 
-		wait(6*250, SC_NS);//wait(6, SC_NS); //why not wait() for clock >> start condition sld change on high scl
+		wait(6*250, SC_NS); // start condition: sdl change on high scl
 		socket->b_transport(*trans, delay); 
-
 		trans->set_command(TLM_WRITE_COMMAND); 
 
 		/** writing slave address to bus **/ 
-		UCB0I2CSA=(sc_bv<7>)(read_register(UCB0I2CSA_));
-		//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- slave address " << UCB0I2CSA  << endl;
-		while (bitnr < 7) { 			
+		UCB0I2CSA=(sc_bv<7>)(read_register(UCB0I2CSA_)); // Read register with slave address
+		while (bitnr < 7) { // 7 bit address			
 			b = UCB0I2CSA[bitnr]; 
 			sda.write(b); 
 			wait(); 
 			socket->b_transport(*trans, delay); 
 
 			/** if b is high, check if other master is writing b low on bus, if yes wait (slave remains) **/
-			if ((b==1)&(sda.read() == 0)) {
-				//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Arbitration lost, waiting " << endl;
+			if ((b==1)&(sda.read() == 0)) { // arbitration lost
 				write_register(UCB0CTL1_, ( (read_register(UCB0CTL1_))& (!(UCTXSTT)) ) ); // clear start flag
-				wait_other_master();
-				//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- bus free, starting over " << endl;
-				goto transmissionstart;
+				wait_other_master(); // wait until bus free
+				goto transmissionstart; // bus free, start over
 			}
 			bitnr++; 
 			/** writing read/!write bit to bus **/ 
@@ -219,23 +198,17 @@ class initiator :
 		{ 
 			/** read transmit buffer **/		
 			if (!(boolmem_write_txbuf)) { // no data written yet
-				//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Waiting for transmit buffer write "  << endl;
-				wait(eventmem_write_txbuf);	
+				wait(eventmem_write_txbuf);	// wait until data written to buffer
 			}	
-			boolmem_write_txbuf=0;		
-			UCB0TXBUF=(sc_bv<8>)(read_register(UCB0TXBUF_ ));
+			boolmem_write_txbuf=0;	// reset write flag
+			UCB0TXBUF=(sc_bv<8>)(read_register(UCB0TXBUF_ )); // read buffer
 		}
 
 		/** wait for address acknowledgement **/
 		trans->set_command(TLM_READ_COMMAND); 
 		socket->b_transport(*trans, delay); 
 		wait(); 
-		//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Ack : " << sda.read() << endl; 
-		if (sda.read() == 1) //no acknowledgement, this does not happen, write 1 by default?
-		{	
-			int test;
-			cin>>test; 
-		}
+		if (sda.read() == 1) {} //no acknowledgement
 
 		/** clear start flag **/
 		UCB0CTL1=read_register(UCB0CTL1_ ); 
@@ -257,7 +230,7 @@ class initiator :
 				cout << sc_time_stamp()<< ": I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Transmitting data : " << UCB0TXBUF << endl;
 				trans->set_command(TLM_WRITE_COMMAND);  
 				bitnr = 7; 
-				while (bitnr >= 0) {
+				while (bitnr >= 0) {  // transmit data bitwise
 					b = shift_reg[bitnr--]; 
 					sda.write(b); 
 					wait(); 
@@ -265,23 +238,17 @@ class initiator :
 				} 
 				/** read transmit buffer **/		
 				while ((!(read_register(UCB0CTL1_) & UCTXSTP))&(!(boolmem_write_txbuf))){ // no stop flag and no data written
-					//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Waiting for transmit buffer write "  << endl;
-					wait(eventmem_write_txbuf | eventmem_write_ctl1);
+					wait(eventmem_write_txbuf | eventmem_write_ctl1); // wait for transmit buffer write
 				}	
-				boolmem_write_txbuf=0;
-				UCB0TXBUF=(sc_bv<8>)(read_register(UCB0TXBUF_ ));	
+				boolmem_write_txbuf=0; // reset write flag
+				UCB0TXBUF=(sc_bv<8>)(read_register(UCB0TXBUF_ )); // read transmit buffer
  	 
 				/** wait for acknowledgement **/
 				trans->set_command(TLM_READ_COMMAND); 
 				socket->b_transport(*trans, delay); 
 
 				do {wait();} while (bus_stall & (!(read_register(UCB0CTL1_) & UCTXSTP))) ; 
-				//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Ack : " << sda.read() << endl; 
-				if (sda.read() == 1) //no acknowledgement, this does not happen, write 1 by default?
-				{	
-					int test;
-					cin>>test; 
-				}
+				if (sda.read() == 1) {} //no acknowledgement
 			}
 			/** if receiving **/
 			else {
@@ -291,8 +258,7 @@ class initiator :
 				while (bitnr >= 0) { 
 					socket->b_transport(*trans, delay); 
 					do {wait();} while (bus_stall & (!(read_register(UCB0CTL1_) & UCTXSTP)));					
-					//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- receiving data : " << sda.read() << endl; 
-					shift_reg[bitnr--] = sda.read();
+					shift_reg[bitnr--] = sda.read(); // receive data bitwise
 				}
 				cout << sc_time_stamp()<< ": I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Received data : " << shift_reg << endl;
 
@@ -304,8 +270,7 @@ class initiator :
 
 				/* wait until receive buffer read */	
 				while ((!(read_register(UCB0CTL1_) & UCTXSTP))&(!(boolmem_read_rxbuf))){ // no stop flag and buffer not read
-					//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- Waiting for rxbuffer read "  << endl;
-					wait(eventmem_read_rxbuf | eventmem_write_ctl1);
+					wait(eventmem_read_rxbuf | eventmem_write_ctl1); // wait until buffer read
 				}	
 				boolmem_read_rxbuf=0;
 	
@@ -319,7 +284,6 @@ class initiator :
 			UCB0CTL1=read_register(UCB0CTL1_ );
 		}
 		/** write stop condition on bus **/
-		//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- stop flag " << endl;
 		STP_flag = 1; //stop flag
 		wait(7*250, SC_NS); 
 		trans->set_command(TLM_IGNORE_COMMAND); 
@@ -329,17 +293,11 @@ class initiator :
 		socket->b_transport(*trans, delay); 
 
 		/** clear stop flag **/
-		//cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- clear stop flag " << endl;
 		write_register(UCB0CTL1_ , (UCB0CTL1 & (~(UCTXSTP)))); //clear stop flag
 		STP_flag=0; 
-		//if (UCTR_flag) sc_stop(); //testing transmission 
 		wait();	
 		bitnr = 0; 		
 		
-		//clock_t end = clock(); // clock end
-		//float seconds = (float)(end - start) / CLOCKS_PER_SEC;
-		////cout << "I2C: Master "<<sc_core::sc_get_current_process_b()->get_parent()->basename()<<"--- time "<< seconds << endl;
-
 		goto transmissionstart;
 	}
 

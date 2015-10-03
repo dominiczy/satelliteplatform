@@ -14,102 +14,58 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "i2cdriver.h"
-//#include "croutine.h"
-//#include "clocks/bc2.h"
 #include <msp430.h>
-//#include <stdbool.h>
-//#include <stdio.h>
-//#include "integer.c"
-//#include "i2c.h"
-//#include "comp.h"
-//#define P1OUT_                0x0021    /* Port 1 Output */
-
-/* The number of flash co-routines to create. */
-//#define mainNUM_FLASH_CO_ROUTINES       ( 2 )
 
 static void prvSetupHardware( void );
-//static void prvSetupI2C( void );
 
-int rv;
 #define eps 12
 #define ttc 13
-//bool transmit;
-unsigned char tm;
-unsigned char tc;
-//unsigned char result;
+
+unsigned char *ptc;     
+unsigned char *ptm;               
+unsigned char tm[10]= {0};
+unsigned char tc[10]= {0};
 
 void prvTaskreceiveTM (void* pvParameters) 
 {
     (void) pvParameters;                    // Just to stop compiler warnings.
-
     for (;;) {
-	tm=receive(eps);
+	*ptm++=receive(eps);
         vTaskDelay(8);	
     }
 }
 
-void prvTasktransmitTM (void* pvParameters) // OBDH to TTC routine
-{
-    (void) pvParameters;                    // Just to stop compiler warnings.
-
-    for (;;) {
-	transmit(tm, ttc);
-        vTaskDelay(10);	
-    }
-}
 
 void prvTaskreceiveTC (void* pvParameters) 
 {
     (void) pvParameters;                    // Just to stop compiler warnings.
-
     for (;;) {
-	tc=receive(ttc);
-        vTaskDelay(12);	
+	*ptc++=receive(ttc);
+        vTaskDelay(8);	
     }
 }
 
 void prvTaskprocessData (void* pvParameters) 
 {
     (void) pvParameters;                    // Just to stop compiler warnings.
-
     for (;;) {
-	//result=tm*tc;
-	if (tm>tc){
-		P1OUT ^= BIT0;
-	} else if (tc<tm) {
-		P1OUT ^= BIT6;
-	} else {
-		P1OUT ^= BIT0;
-		P1OUT ^= BIT6;
-	}	
         vTaskDelay(4);	
     }
 }
 
 void main( void )
 {
+
+	ptm = (unsigned char *) tm;
+	ptc = (unsigned char *) tc;
 	prvSetupI2C();
-	//prvSetupHardware();
-	//vParTestInitialise();
 
-	//printf("\nStarting up CPU %lu: SR %04x IFG1 %02x\n", configCPU_CLOCK_HZ, __read_status_register(), IFG1);
-	
-	//vStartFlashCoRoutines( mainNUM_FLASH_CO_ROUTINES );
-	//vStartIntegerMathTasks( 1);	
-	//xCoRoutineCreate( vI2CCoRoutine, 1, 0 );
-	//xTaskCreate( vTaskComp, "comp", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-	//xTaskCreate( vTaskI2C, "i2c", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
-
-	 xTaskCreate( prvTaskreceiveTM, ( signed char * ) "receiveTM", configMINIMAL_STACK_SIZE, NULL,
+	xTaskCreate( prvTaskreceiveTM, ( signed char * ) "receiveTM", configMINIMAL_STACK_SIZE, NULL,
         2, ( xTaskHandle * ) NULL );
-    	xTaskCreate( prvTasktransmitTM, ( signed char * ) "transmitTM", configMINIMAL_STACK_SIZE, NULL, 
-        2, ( xTaskHandle * ) NULL );
-	 xTaskCreate( prvTaskreceiveTC, ( signed char * ) "receiveTC", configMINIMAL_STACK_SIZE, NULL,
+	xTaskCreate( prvTaskreceiveTC, ( signed char * ) "receiveTC", configMINIMAL_STACK_SIZE, NULL,
         3, ( xTaskHandle * ) NULL );
 	xTaskCreate( prvTaskprocessData, ( signed char * ) "processData", configMINIMAL_STACK_SIZE, NULL,
         0, ( xTaskHandle * ) NULL );
-
-
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
@@ -126,8 +82,7 @@ void vApplicationIdleHook( void ) // this is disabled, coroutines not used
 	}
 }
 
-void
-test430_bsp_init_putchar ()
+void test430_bsp_init_putchar ()
 {
 	unsigned short usBR;
 	unsigned char ucBRF = 0;

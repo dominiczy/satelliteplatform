@@ -14,21 +14,18 @@
 
 #include <msp430.h>
 
-//int state; // 1 transmit/sleep 2 receive
-
 unsigned char TXData;
 unsigned char RXData;
 unsigned char state;
 
 int main(void)
 {
-  state=2;
-	//RXData =2;
+  state=2; 									// State receive
   WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
   P3SEL |= 0x06;                            // Assign I2C pins to USCI_B0
   UCB0CTL1 |= UCSWRST;                      // Enable SW reset
   UCB0CTL0 = UCMODE_3 + UCSYNC;             // I2C Slave, synchronous mode
-  UCB0I2COA = 12;                         // Own Address is 048h
+  UCB0I2COA = 12;                           // Own Address is 048h
   UCB0CTL1 &= ~UCSWRST;                     // Clear SW reset, resume operation
   UCB0I2CIE |= UCSTPIE + UCSTTIE;           // Enable STT and STP interrupt
   IE2 |= UCB0TXIE;                          // Enable TX interrupt
@@ -36,14 +33,12 @@ int main(void)
   TXData = 0xff; 
   while (1)
   {
-	if (state==1){ // do measurements
-		TXData = (TXData-1)%127;                            // Used to hold TX data
-		//while (state==1){};// do stuff
+	if (state==1){ 							// Do operations
+		TXData = (TXData-1)%127;            // Calculate TX data
 	} 
 	__bis_SR_register(CPUOFF + GIE);        // Enter LPM0 w/ interrupts
-
-    //__no_operation();                       // Set breakpoint >>here<< and
-  }                                         // read out the TXByteCtr counter
+    //__no_operation();                     
+  }                                         
 }
 
 //------------------------------------------------------------------------------
@@ -60,23 +55,9 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR (void)
 #error Compiler not supported!
 #endif
 {
-	//if (IFG2 & UCB0TXIFG) { // transmit interrupt handling
-		UCB0TXBUF = TXData;                       // TX data
-		state=1;
-	//} 
-	//if (IFG2 & UCB0RXIFG) { // receive interrupt handling
-		//RXData = UCB0RXBUF; 			 // Get RX data	
-	//}
-	// state=RXData;                    
-	/*if (state==1){ // transmit
-    		UCB0TXBUF = TXData;                       // TX data
-		state=2;	 
-	} else if (state==2) {   // receive
-		//RXData = UCB0RXBUF;                       // Get RX data
-		if (RXData==1){
-			state=1;
-		}  
-	}*/
+	UCB0TXBUF = TXData;                       // TX data
+	RXData = UCB0RXBUF; 
+	state=1;
 	__bic_SR_register_on_exit(CPUOFF);        // Exit LPM0
 }
 
@@ -95,6 +76,6 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
 #error Compiler not supported!
 #endif
 {
-  UCB0STAT &= ~(UCSTPIFG + UCSTTIFG);       // Clear interrupt flags
+	UCB0STAT &= ~(UCSTPIFG + UCSTTIFG);       // Clear interrupt flags
     __bic_SR_register_on_exit(CPUOFF);      // Exit LPM0 if data was
 }                                           // transmitted
